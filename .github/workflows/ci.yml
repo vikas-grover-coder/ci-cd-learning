@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI = Continuous Integration
+# Every time code is pushed, a fresh machine checks that the code still works.
+# GitHub finds this file automatically because it lives in .github/workflows/
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Name shown in the "Actions" tab on GitHub
+name: CI
+
+# WHEN should this workflow run? (called "triggers" or "events")
+on:
+  push:
+    branches: [main]        # every push to main
+  pull_request:
+    branches: [main]        # every pull request that wants to merge into main
+
+# WHAT should run? A workflow has one or more "jobs".
+jobs:
+  build-and-test:           # job id (any name you like)
+    name: Lint, Test & Build
+
+    # Each job gets a brand-new, empty virtual machine from GitHub.
+    # It is deleted after the job finishes, so every run starts clean.
+    runs-on: ubuntu-latest
+
+    # A job is a list of "steps" that run one after another, top to bottom.
+    # If any step fails (non-zero exit code), the job stops and is marked ❌.
+    steps:
+      # 1. The machine is empty — it doesn't have your code yet.
+      #    "uses" runs a ready-made action written by someone else (here: GitHub).
+      #    actions/checkout downloads your repository into the machine.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Install Node.js — the same major version you use locally (v22).
+      #    cache: npm saves downloaded packages between runs, so later runs are faster.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 3. Install dependencies. job id (any name you like)
+    name: Lint, Test & Build
+      #    "run" executes a shell command, like typing it in your terminal.
+      #    npm ci (not npm install) installs EXACTLY what package-lock.json says,
+      #    and fails if package.json and the lock file disagree → reproducible builds.
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Lint — catches style problems and common mistakes.
+      - name: Lint
+        run: npm run lint
+
+      # 5. Typecheck — catches TypeScript type errors.
+      - name: Typecheck
+        run: npm run typecheck
+
+      # 6. Test — runs the automated tests in tests/.
+      - name: Test
+        run: npm test
+
+      # 7. Build — proves the code compiles into dist/ (what would be deployed).
+      - name: Build
+        run: npm run build
