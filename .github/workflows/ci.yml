@@ -62,3 +62,40 @@ jobs:
       # 7. Build — proves the code compiles into dist/ (what would be deployed).
       - name: Build
         run: npm run build
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Second job: package the app as a Docker image and check that it really runs.
+  # ───────────────────────────────────────────────────────────────────────────
+  docker:
+    name: Docker Build & Smoke Test
+
+    # "needs" = wait for the job above and run ONLY if it passed.
+    # Without this, both jobs would start at the same time on separate machines.
+    needs: build-and-test
+
+    runs-on: ubuntu-latest   # a NEW clean machine (Docker is pre-installed)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Same command you run locally. Fails if the Dockerfile is broken.
+      - name: Build Docker image
+        run: docker build -t ci-cd-learning .
+
+      # Smoke test = "turn it on and see if smoke comes out".
+      # Start the container, wait until /api/health answers, fail after 30s.
+      - name: Smoke test the container
+        run: |
+          docker run -d --name app -p 3000:3000 ci-cd-learning
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/health; then
+              echo ""
+              echo "✅ Container is healthy"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "❌ Container did not become healthy"
+          docker logs app
+          exit 1
