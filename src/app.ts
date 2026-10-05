@@ -20,6 +20,7 @@ app.use(express.json());
 
 // 1. Health check — used later by CI/CD to verify a deployment is alive
 app.get("/api/health", (_req: Request, res: Response) => {
+  console.log('HEALTHHHH:')
   res.json({ status: "ok", uptime: process.uptime() });
 });
 
