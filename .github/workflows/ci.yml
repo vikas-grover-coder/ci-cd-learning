@@ -40,8 +40,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      # 3. Install dependencies. job id (any name you like)
-    name: Lint, Test & Build
+      # 3. Install dependencies.
       #    "run" executes a shell command, like typing it in your terminal.
       #    npm ci (not npm install) installs EXACTLY what package-lock.json says,
       #    and fails if package.json and the lock file disagree → reproducible builds.
